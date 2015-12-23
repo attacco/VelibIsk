@@ -10,6 +10,8 @@ import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.example.velibisk.rssreader.rss.RSSItem;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -18,25 +20,43 @@ import java.util.List;
  * Created by attacco on 23.12.2015.
  */
 public class FeedFragment extends Fragment {
-    private AdapterImpl adapter;
+    private final static String ARGUMENTS_ITEMS_KEY = "items";
+
+    private final AdapterImpl adapter;
+
+    public FeedFragment() {
+        adapter = new AdapterImpl(Collections.<RSSItem>emptyList());
+    }
+
+    public static Bundle createArguments(List<RSSItem> items) {
+        Bundle b = new Bundle();
+        b.putSerializable(ARGUMENTS_ITEMS_KEY, Util.toArrayList(items));
+        return b;
+    }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         final View v = inflater.inflate(R.layout.fragment_feed, container, false);
-
         final ListView listView = (ListView) v.findViewById(R.id.listView);
-        adapter = new AdapterImpl(Collections.<RSSItem>emptyList());
         listView.setAdapter(adapter);
-
         return v;
     }
 
-    public void update(List<RSSItem> items) {
-        if (adapter != null) {
-            adapter.setData(items == null ? Collections.<RSSItem>emptyList() : items);
-            adapter.notifyDataSetChanged();
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        final Bundle bundle = getArguments();
+        if (bundle != null) {
+            ArrayList<RSSItem> items = (ArrayList<RSSItem>) bundle.getSerializable(ARGUMENTS_ITEMS_KEY);
+            update(items);
         }
+    }
+
+    public void update(List<RSSItem> items) {
+        adapter.setData(Util.toArrayList(items));
+        adapter.notifyDataSetChanged();
     }
 
     private class AdapterImpl extends BaseAdapter {
@@ -74,7 +94,7 @@ public class FeedFragment extends Fragment {
 
             final RSSItem item = (RSSItem) getItem(position);
             TextView textView = (TextView) convertView;
-            textView.setText(item.getArticle().getTitle());
+            textView.setText(item.getTitle());
             return textView;
         }
     }

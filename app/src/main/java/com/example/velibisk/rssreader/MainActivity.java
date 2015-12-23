@@ -1,16 +1,19 @@
 package com.example.velibisk.rssreader;
 
-import android.app.LoaderManager;
-import android.content.AsyncTaskLoader;
 import android.content.Context;
-import android.content.Loader;
-import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.AsyncTaskLoader;
+import android.support.v4.content.Loader;
+import android.support.v4.os.OperationCanceledException;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 
-import com.pkmmte.pkrss.Article;
-import com.pkmmte.pkrss.Callback;
-import com.pkmmte.pkrss.PkRSS;
+import com.example.velibisk.rssreader.rss.RSSClient;
+import com.example.velibisk.rssreader.rss.RSSItem;
+import com.example.velibisk.rssreader.rss.RSSItemVisitor;
+import com.example.velibisk.rssreader.rss.RSSSource;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -23,8 +26,6 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<List<RSSItem>> {
     private final static String PROGRESS_FRAGMENT_TAG = "progress_fragment";
     private final static String FEED_FRAGMENT_TAG = "feed_fragment";
-    private final static String LENTA_RU_RSS_FEED_URL = "http://lenta.ru/rss";
-    private final static String GAZETA_RU_RSS_FEED_URL = "http://www.gazeta.ru/export/rss/lenta.xml";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,10 +33,10 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         setContentView(R.layout.activity_main);
 
         getSupportFragmentManager().beginTransaction()
-                .add(R.id.rootContainer, new ProgressFragment(), PROGRESS_FRAGMENT_TAG)
+                .add(R.id.fragmentContainer, new ProgressFragment(), PROGRESS_FRAGMENT_TAG)
                 .commit();
 
-        getLoaderManager().initLoader(0, null, this);
+        getSupportLoaderManager().initLoader(0, null, this);
     }
 
     @Override
@@ -44,15 +45,16 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     @Override
-    public void onLoadFinished(Loader<List<RSSItem>> loader, List<RSSItem> data) {
-        FeedFragment fragment = (FeedFragment) getSupportFragmentManager().findFragmentByTag(FEED_FRAGMENT_TAG);
+    public void onLoadFinished(Loader<List<RSSItem>> loader, final List<RSSItem> data) {
+        final FragmentManager fragmentManager = getSupportFragmentManager();
+        FeedFragment fragment = (FeedFragment) fragmentManager.findFragmentByTag(FEED_FRAGMENT_TAG);
         if (fragment == null) {
             fragment = new FeedFragment();
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.rootContainer, fragment, FEED_FRAGMENT_TAG)
-                    .commit();
+            fragment.setArguments(FeedFragment.createArguments(data));
+            fragmentManager.beginTransaction()
+                    .replace(R.id.fragmentContainer, fragment, FEED_FRAGMENT_TAG)
+                    .commitAllowingStateLoss();
         }
-        fragment.update(data);
     }
 
     @Override
@@ -64,68 +66,55 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     private static class LoaderImpl extends AsyncTaskLoader<List<RSSItem>> {
-        private final PkRSS pkRSS;
+        private final static String LOGGER_TAG = "Loader";
+        private final RSSClient client;
         private List<RSSItem> data;
 
         public LoaderImpl(Context context) {
             super(context);
-            this.pkRSS = new PkRSS.Builder(getContext()).handler(null).loggingEnabled(true).build();
+            // todo use DI instead
+            client = new RSSClient(getContext());
         }
 
         @Override
         public List<RSSItem> loadInBackground() {
-            // todo skip cache only if user manually refreshes
-
-            final List<Article> articles = new ArrayList<>();
-
-            final Callback emptyCallback = new Callback() {
+            final List<RSSItem> items = new ArrayList<>();
+            final RSSItemVisitor visitor = new RSSItemVisitor() {
                 @Override
-                public void onPreload() {
-                }
-
-                @Override
-                public void onLoaded(List<Article> newArticles) {
-                }
-
-                @Override
-                public void onLoadFailed() {
+                public boolean visit(RSSItem item) {
+                    items.add(item);
+                    return true;
                 }
             };
+
+            // todo remove it
             try {
-                articles.addAll(pkRSS.load(LENTA_RU_RSS_FEED_URL).callback(emptyCallback).get());
-            } catch (Exception e) {
-                // todo show FAILURE view
-                throw new RuntimeException(e);
-            }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN && isLoadInBackgroundCanceled()) {
-                throw new android.os.OperationCanceledException();
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                throw new OperationCanceledException();
             }
 
-            try {
-                articles.addAll(pkRSS.load(GAZETA_RU_RSS_FEED_URL).callback(emptyCallback).get());
-            } catch (Exception e) {
-                // todo show FAILURE view
-                throw new RuntimeException(e);
-            }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN && isLoadInBackgroundCanceled()) {
-                throw new android.os.OperationCanceledException();
-            }
-
-            ArrayList<RSSItem> result = new ArrayList<>(articles.size());
-            for (Article a : articles) {
-                result.add(new RSSItem(a));
+            for (RSSSource source : RSSSource.values()) {
+                try {
+                    client.read(source, visitor);
+                } catch (Exception e) {
+                    Log.e(LOGGER_TAG, "Failed to complete reading source: " + source.name(), e);
+                }
+                if (isLoadInBackgroundCanceled()) {
+                    throw new OperationCanceledException();
+                }
             }
 
-            Collections.sort(result, new Comparator<RSSItem>() {
+            Collections.sort(items, new Comparator<RSSItem>() {
                 @Override
                 public int compare(RSSItem lhs, RSSItem rhs) {
-                    final long ldate = lhs.getArticle().getDate();
-                    final long rdate = rhs.getArticle().getDate();
+                    final long ldate = lhs.getDate().getTime();
+                    final long rdate = rhs.getDate().getTime();
                     return ldate < rdate ? -1 : ldate == rdate ? 0 : 1;
                 }
             });
 
-            return result;
+            return items;
         }
 
         @Override
@@ -154,7 +143,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             super.onReset();
             onStopLoading();
             data = null;
-            pkRSS.clearData();
         }
     }
 }
