@@ -1,4 +1,4 @@
-package com.example.velibisk.rssreader;
+package com.example.velibisk.rssreader.ui;
 
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
@@ -9,6 +9,9 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
+import com.example.velibisk.rssreader.Application;
+import com.example.velibisk.rssreader.ApplicationComponent;
+import com.example.velibisk.rssreader.R;
 import com.example.velibisk.rssreader.rss.RSSItem;
 
 import java.util.List;

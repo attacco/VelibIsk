@@ -21,11 +21,11 @@ public class RSSModule {
 
     @Provides
     @Singleton
-    RSSClient provideRssClient(Application application) {
+    OkHttpClient provideOkHttpClient(Application application) {
         final OkHttpClient http = new OkHttpClient();
         http.setCache(new Cache(new File(application.getCacheDir(), "http"), CACHE_DIR_SIZE));
         http.setConnectTimeout(3, TimeUnit.SECONDS);
         http.setReadTimeout(3, TimeUnit.SECONDS);
-        return new RSSClient(http);
+        return http;
     }
 }

@@ -1,4 +1,4 @@
-package com.example.velibisk.rssreader;
+package com.example.velibisk.rssreader.ui;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -12,6 +12,8 @@ import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.example.velibisk.rssreader.R;
+import com.example.velibisk.rssreader.Util;
 import com.example.velibisk.rssreader.rss.RSSItem;
 
 import java.util.ArrayList;
@@ -32,9 +34,12 @@ public class FeedFragment extends Fragment implements SwipeRefreshLayout.OnRefre
 
     private final AdapterImpl adapter;
 
-    @Bind(R.id.swipeRefreshLayout) SwipeRefreshLayout swipeRefreshLayout;
-    @Bind(R.id.listView) ListView listView;
-    @BindColor(R.color.colorAccent) int accentColor;
+    @Bind(R.id.swipeRefreshLayout)
+    SwipeRefreshLayout swipeRefreshLayout;
+    @Bind(R.id.listView)
+    ListView listView;
+    @BindColor(R.color.colorAccent)
+    int accentColor;
 
     private Listener listener;
 

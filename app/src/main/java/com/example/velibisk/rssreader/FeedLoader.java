@@ -6,8 +6,6 @@ import android.support.v4.os.OperationCanceledException;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.example.velibisk.rssreader.Application;
-import com.example.velibisk.rssreader.R;
 import com.example.velibisk.rssreader.rss.RSSClient;
 import com.example.velibisk.rssreader.rss.RSSItem;
 import com.example.velibisk.rssreader.rss.RSSItemVisitor;

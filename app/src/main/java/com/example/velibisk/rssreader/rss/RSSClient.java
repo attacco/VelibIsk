@@ -16,14 +16,21 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 /**
  * Created by attacco on 23.12.2015.
  */
 public class RSSClient {
     private final OkHttpClient http;
+    private final RSSItemFactory itemFactory;
 
-    public RSSClient(OkHttpClient okHttpClient) {
+    @Inject
+    @Singleton
+    public RSSClient(OkHttpClient okHttpClient, RSSItemFactory itemFactory) {
         this.http = okHttpClient;
+        this.itemFactory = itemFactory;
     }
 
     public void read(RSSSource source, RSSItemVisitor visitor) throws Exception {
@@ -54,7 +61,7 @@ public class RSSClient {
         while (p.getEventType() != XmlPullParser.END_DOCUMENT) {
             if (p.getEventType() == XmlPullParser.START_TAG) {
                 if ("item".equals(p.getName())) {
-                    item = new RSSItem(source);
+                    item = itemFactory.createItem(source);
                 } else if ("title".equals(p.getName())) {
                     text = null;
                 } else if ("enclosure".equals(p.getName())) {
