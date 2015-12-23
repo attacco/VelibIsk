@@ -37,12 +37,16 @@ public class FeedFragment extends Fragment implements SwipeRefreshLayout.OnRefre
 
     @Bind(R.id.swipeRefreshLayout)
     SwipeRefreshLayout swipeRefreshLayout;
+
     @Bind(R.id.listView)
     ListView listView;
+
     @BindColor(R.color.colorAccent)
     int accentColor;
+
     @Inject
     Picasso picasso;
+
     private Listener listener;
     private AdapterImpl adapter;
 
@@ -148,24 +152,20 @@ public class FeedFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         public View getView(int position, View v, ViewGroup parent) {
             if (v == null) {
                 v = layoutInflater.inflate(R.layout.layout_feed_item, parent, false);
-                final Companion companion = new Companion(ButterKnife.<ImageView>findById(v, R.id.imageView),
-                        ButterKnife.<TextView>findById(v, R.id.titleTextView),
-                        ButterKnife.<TextView>findById(v, R.id.descriptionTextView));
-                v.setTag(companion);
+                v.setTag(new Companion(v));
             }
 
             final ListItem item = (ListItem) getItem(position);
             final Companion companion = (Companion) v.getTag();
-            companion.titleTextView.setText(item.getTitle());
-            picasso.load(item.getImgUri()).into(companion.imageView);
-            companion.renderDescription(item.isExpanded() ? item.getDescription() : null);
+            companion.renderTitle(item);
+            companion.loadImage(item);
+            companion.renderDescription(item);
 
             v.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     item.setExpanded(!item.isExpanded());
-                    companion.renderDescription(item.isExpanded() ? item.getDescription() : null);
-                    companion.titleTextView.setTypeface(item.isExpanded() ? Typeface.DEFAULT_BOLD : Typeface.DEFAULT);
+                    notifyDataSetChanged();
                 }
             });
 
@@ -173,25 +173,36 @@ public class FeedFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         }
 
         private class Companion {
-            public final ImageView imageView;
-            public final TextView titleTextView;
-            public final TextView descriptionTextView;
+            private final ImageView imageView;
+            private final TextView titleTextView;
+            private final TextView descriptionTextView;
 
-            public Companion(ImageView imageView, TextView titleTextView,
-                             TextView descriptionTextView) {
-                this.imageView = imageView;
-                this.titleTextView = titleTextView;
-                this.descriptionTextView = descriptionTextView;
+            public Companion(View v) {
+                imageView = ButterKnife.findById(v, R.id.imageView);
+                titleTextView = ButterKnife.findById(v, R.id.titleTextView);
+                descriptionTextView = ButterKnife.findById(v, R.id.descriptionTextView);
             }
 
-            public void renderDescription(String description) {
+            public void renderDescription(ListItem item) {
+                final String description = item.isExpanded() ? item.getDescription() : null;
+                final boolean expanded;
                 if (description != null && !"".equals(description)) {
+                    expanded = true;
                     descriptionTextView.setText(description);
-                    descriptionTextView.setVisibility(View.VISIBLE);
                 } else {
+                    expanded = false;
                     descriptionTextView.setText(null); // free memory :)
-                    descriptionTextView.setVisibility(View.GONE);
                 }
+                descriptionTextView.setVisibility(expanded ? View.VISIBLE : View.GONE);
+            }
+
+            public void renderTitle(ListItem item) {
+                titleTextView.setTypeface(item.isExpanded() ? Typeface.DEFAULT_BOLD : Typeface.DEFAULT);
+                titleTextView.setText(item.getTitle());
+            }
+
+            public void loadImage(ListItem item) {
+                picasso.load(item.getImgUri()).into(imageView);
             }
         }
     }
