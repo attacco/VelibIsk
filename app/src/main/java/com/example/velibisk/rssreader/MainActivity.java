@@ -23,7 +23,7 @@ import java.util.List;
 /**
  * Created by attacco on 22.12.2015.
  */
-public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<List<RSSItem>> {
+public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<List<RSSItem>>, FeedFragment.Listener {
     private final static String PROGRESS_FRAGMENT_TAG = "progress_fragment";
     private final static String FEED_FRAGMENT_TAG = "feed_fragment";
 
@@ -54,6 +54,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             fragmentManager.beginTransaction()
                     .replace(R.id.fragmentContainer, fragment, FEED_FRAGMENT_TAG)
                     .commitAllowingStateLoss();
+        } else {
+            fragment.update(data);
         }
     }
 
@@ -63,6 +65,11 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         if (fragment != null) {
             fragment.update(null);
         }
+    }
+
+    @Override
+    public void onWantRefresh(FeedFragment fragment) {
+        getSupportLoaderManager().restartLoader(0, null, this);
     }
 
     private static class LoaderImpl extends AsyncTaskLoader<List<RSSItem>> {

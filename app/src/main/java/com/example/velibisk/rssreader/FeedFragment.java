@@ -1,8 +1,10 @@
 package com.example.velibisk.rssreader;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,10 +21,12 @@ import java.util.List;
 /**
  * Created by attacco on 23.12.2015.
  */
-public class FeedFragment extends Fragment {
+public class FeedFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
     private final static String ARGUMENTS_ITEMS_KEY = "items";
 
     private final AdapterImpl adapter;
+    private SwipeRefreshLayout swipeRefreshLayout;
+    private Listener listener;
 
     public FeedFragment() {
         adapter = new AdapterImpl(Collections.<RSSItem>emptyList());
@@ -34,13 +38,40 @@ public class FeedFragment extends Fragment {
         return b;
     }
 
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (getActivity() instanceof Listener) {
+            listener = (Listener) getActivity();
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        listener = null;
+    }
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         final View v = inflater.inflate(R.layout.fragment_feed, container, false);
+
         final ListView listView = (ListView) v.findViewById(R.id.listView);
         listView.setAdapter(adapter);
+
+        swipeRefreshLayout = (SwipeRefreshLayout) v.findViewById(R.id.swipeRefreshLayout);
+        swipeRefreshLayout.setOnRefreshListener(this);
+
         return v;
+    }
+
+    @Override
+    public void onRefresh() {
+        if (listener != null) {
+            swipeRefreshLayout.setRefreshing(true);
+            listener.onWantRefresh(this);
+        }
     }
 
     @Override
@@ -55,8 +86,13 @@ public class FeedFragment extends Fragment {
     }
 
     public void update(List<RSSItem> items) {
+        swipeRefreshLayout.setRefreshing(false);
         adapter.setData(Util.toArrayList(items));
         adapter.notifyDataSetChanged();
+    }
+
+    public interface Listener {
+        void onWantRefresh(FeedFragment fragment);
     }
 
     private class AdapterImpl extends BaseAdapter {
