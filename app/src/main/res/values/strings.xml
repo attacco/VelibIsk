@@ -2,7 +2,7 @@
     <string name="app_name">VelibIsk</string>
     <string name="rss_source_lenta_name">Lenta.ru</string>
     <string name="rss_source_gazeta_name">Gazeta.ru</string>
-    <string name="activity_main_title">VelibIsk/rss_reader</string>
+    <string name="activity_main_title">VelibIsk/RSS Reader</string>
     <string name="activity_main_failed_read_source_toast">Failed to read %1$s</string>
     <string name="activity_main_failed_read_several_sources_toast">Failed to read several sources</string>
     <string name="menu_item_about">About</string>
