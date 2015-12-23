@@ -10,16 +10,14 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 
 import com.example.velibisk.rssreader.Application;
-import com.example.velibisk.rssreader.ApplicationComponent;
 import com.example.velibisk.rssreader.R;
-import com.example.velibisk.rssreader.rss.RSSItem;
 
 import java.util.List;
 
 /**
  * Created by attacco on 22.12.2015.
  */
-public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<List<RSSItem>>, FeedFragment.Listener {
+public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<List<ListItem>>, FeedFragment.Listener {
     private final static String PROGRESS_FRAGMENT_TAG = "progress_fragment";
     private final static String FEED_FRAGMENT_TAG = "feed_fragment";
     private final static String ABOUT_DIALOG_FRAGMENT_TAG = "about_dialog_fragment";
@@ -55,21 +53,21 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     private void showAboutDialog() {
-        getApplicationComponent().getAboutDialogFragment().show(getSupportFragmentManager(),
+        getUIComponent().getAboutDialogFragment().show(getSupportFragmentManager(),
                 ABOUT_DIALOG_FRAGMENT_TAG);
     }
 
     @Override
-    public Loader<List<RSSItem>> onCreateLoader(int id, Bundle args) {
-        return getApplicationComponent().getFeedLoader();
+    public Loader<List<ListItem>> onCreateLoader(int id, Bundle args) {
+        return getUIComponent().getFeedLoader();
     }
 
     @Override
-    public void onLoadFinished(Loader<List<RSSItem>> loader, final List<RSSItem> data) {
+    public void onLoadFinished(Loader<List<ListItem>> loader, final List<ListItem> data) {
         final FragmentManager fragmentManager = getSupportFragmentManager();
         FeedFragment fragment = (FeedFragment) fragmentManager.findFragmentByTag(FEED_FRAGMENT_TAG);
         if (fragment == null) {
-            fragment = getApplicationComponent().getFeedFragment();
+            fragment = getUIComponent().getFeedFragment();
             fragment.setArguments(FeedFragment.createArguments(data));
             fragmentManager.beginTransaction()
                     .replace(R.id.fragmentContainer, fragment, FEED_FRAGMENT_TAG)
@@ -80,7 +78,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     @Override
-    public void onLoaderReset(Loader<List<RSSItem>> loader) {
+    public void onLoaderReset(Loader<List<ListItem>> loader) {
         FeedFragment fragment = (FeedFragment) getSupportFragmentManager().findFragmentByTag(FEED_FRAGMENT_TAG);
         if (fragment != null) {
             fragment.update(null);
@@ -92,7 +90,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         getSupportLoaderManager().restartLoader(0, null, this);
     }
 
-    private ApplicationComponent getApplicationComponent() {
-        return ((Application) getApplication()).getApplicationComponent();
+    private UIComponent getUIComponent() {
+        return ((Application) getApplication()).getUIComponent();
     }
 }

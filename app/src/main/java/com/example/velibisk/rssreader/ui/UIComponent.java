@@ -1,9 +1,7 @@
-package com.example.velibisk.rssreader;
+package com.example.velibisk.rssreader.ui;
 
+import com.example.velibisk.rssreader.ApplicationModule;
 import com.example.velibisk.rssreader.rss.RSSModule;
-import com.example.velibisk.rssreader.ui.AboutDialogFragment;
-import com.example.velibisk.rssreader.ui.FeedFragment;
-import com.example.velibisk.rssreader.ui.UIModule;
 
 import javax.inject.Singleton;
 
@@ -14,12 +12,14 @@ import dagger.Component;
  */
 @Singleton
 @Component(modules = {ApplicationModule.class, RSSModule.class, UIModule.class})
-public interface ApplicationComponent {
+public interface UIComponent {
 
     FeedLoader getFeedLoader();
 
     FeedFragment getFeedFragment();
 
     AboutDialogFragment getAboutDialogFragment();
+
+    void inject(FeedFragment feedFragment);
 
 }

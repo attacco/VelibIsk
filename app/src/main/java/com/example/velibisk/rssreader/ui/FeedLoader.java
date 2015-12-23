@@ -1,4 +1,4 @@
-package com.example.velibisk.rssreader;
+package com.example.velibisk.rssreader.ui;
 
 import android.os.Handler;
 import android.support.v4.content.AsyncTaskLoader;
@@ -6,8 +6,9 @@ import android.support.v4.os.OperationCanceledException;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.example.velibisk.rssreader.Application;
+import com.example.velibisk.rssreader.R;
 import com.example.velibisk.rssreader.rss.RSSClient;
-import com.example.velibisk.rssreader.rss.RSSItem;
 import com.example.velibisk.rssreader.rss.RSSItemVisitor;
 import com.example.velibisk.rssreader.rss.RSSSource;
 
@@ -21,11 +22,11 @@ import javax.inject.Inject;
 /**
  * Created by attacco on 23.12.2015.
  */
-public class FeedLoader extends AsyncTaskLoader<List<RSSItem>> {
+public class FeedLoader extends AsyncTaskLoader<List<ListItem>> {
     private final static String LOGGER_TAG = "Loader";
     private final RSSClient client;
     private final Handler handler;
-    private List<RSSItem> data;
+    private List<ListItem> data;
 
     @Inject
     public FeedLoader(Application application, RSSClient client) {
@@ -35,11 +36,11 @@ public class FeedLoader extends AsyncTaskLoader<List<RSSItem>> {
     }
 
     @Override
-    public List<RSSItem> loadInBackground() {
-        final List<RSSItem> items = new ArrayList<>();
-        final RSSItemVisitor visitor = new RSSItemVisitor() {
+    public List<ListItem> loadInBackground() {
+        final List<ListItem> items = new ArrayList<>();
+        final RSSItemVisitor<ListItem> visitor = new RSSItemVisitor<ListItem>() {
             @Override
-            public boolean visit(RSSItem item) {
+            public boolean visit(ListItem item) {
                 items.add(item);
                 return true;
             }
@@ -86,9 +87,9 @@ public class FeedLoader extends AsyncTaskLoader<List<RSSItem>> {
             }
         });
 
-        Collections.sort(items, new Comparator<RSSItem>() {
+        Collections.sort(items, new Comparator<ListItem>() {
             @Override
-            public int compare(RSSItem lhs, RSSItem rhs) {
+            public int compare(ListItem lhs, ListItem rhs) {
                 final long ldate = lhs.getDate().getTime();
                 final long rdate = rhs.getDate().getTime();
                 return ldate < rdate ? -1 : ldate == rdate ? 0 : 1;
@@ -99,7 +100,7 @@ public class FeedLoader extends AsyncTaskLoader<List<RSSItem>> {
     }
 
     @Override
-    public void deliverResult(List<RSSItem> data) {
+    public void deliverResult(List<ListItem> data) {
         this.data = data;
         if (isStarted()) {
             super.deliverResult(data);

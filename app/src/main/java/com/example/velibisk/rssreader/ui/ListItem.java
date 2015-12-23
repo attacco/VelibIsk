@@ -11,4 +11,13 @@ class ListItem extends RSSItem {
         super(source);
     }
 
+    private boolean expanded = false;
+
+    public boolean isExpanded() {
+        return expanded;
+    }
+
+    public void setExpanded(boolean expanded) {
+        this.expanded = expanded;
+    }
 }

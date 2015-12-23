@@ -1,6 +1,7 @@
 package com.example.velibisk.rssreader.ui;
 
 import android.content.Context;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -9,12 +10,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.example.velibisk.rssreader.Application;
 import com.example.velibisk.rssreader.R;
 import com.example.velibisk.rssreader.Util;
-import com.example.velibisk.rssreader.rss.RSSItem;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,23 +35,22 @@ import butterknife.ButterKnife;
 public class FeedFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
     private final static String ARGUMENTS_ITEMS_KEY = "items";
 
-    private final AdapterImpl adapter;
-
     @Bind(R.id.swipeRefreshLayout)
     SwipeRefreshLayout swipeRefreshLayout;
     @Bind(R.id.listView)
     ListView listView;
     @BindColor(R.color.colorAccent)
     int accentColor;
-
+    @Inject
+    Picasso picasso;
     private Listener listener;
+    private AdapterImpl adapter;
 
     @Inject
     public FeedFragment() {
-        adapter = new AdapterImpl(Collections.<RSSItem>emptyList());
     }
 
-    public static Bundle createArguments(List<RSSItem> items) {
+    public static Bundle createArguments(List<ListItem> items) {
         Bundle b = new Bundle();
         b.putSerializable(ARGUMENTS_ITEMS_KEY, Util.toArrayList(items));
         return b;
@@ -57,15 +59,18 @@ public class FeedFragment extends Fragment implements SwipeRefreshLayout.OnRefre
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
+        ((Application) getActivity().getApplication()).getUIComponent().inject(this);
         if (getActivity() instanceof Listener) {
             listener = (Listener) getActivity();
         }
+        adapter = new AdapterImpl();
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
         listener = null;
+        adapter = null;
     }
 
     @Nullable
@@ -95,12 +100,12 @@ public class FeedFragment extends Fragment implements SwipeRefreshLayout.OnRefre
 
         final Bundle bundle = getArguments();
         if (bundle != null) {
-            ArrayList<RSSItem> items = (ArrayList<RSSItem>) bundle.getSerializable(ARGUMENTS_ITEMS_KEY);
+            ArrayList<ListItem> items = (ArrayList<ListItem>) bundle.getSerializable(ARGUMENTS_ITEMS_KEY);
             update(items);
         }
     }
 
-    public void update(List<RSSItem> items) {
+    public void update(List<ListItem> items) {
         swipeRefreshLayout.setRefreshing(false);
         adapter.setData(Util.toArrayList(items));
         adapter.notifyDataSetChanged();
@@ -111,15 +116,17 @@ public class FeedFragment extends Fragment implements SwipeRefreshLayout.OnRefre
     }
 
     private class AdapterImpl extends BaseAdapter {
-        private ArrayList<RSSItem> items;
+        private final LayoutInflater layoutInflater = getActivity().getLayoutInflater();
+        private ArrayList<ListItem> items;
 
-        public AdapterImpl(List<RSSItem> items) {
-            setData(items);
+        public AdapterImpl() {
+            setData(Collections.<ListItem>emptyList());
+            ButterKnife.bind(this, getActivity());
         }
 
-        public void setData(List<RSSItem> items) {
+        public void setData(List<ListItem> items) {
             this.items = items instanceof ArrayList ?
-                    (ArrayList<RSSItem>) items : new ArrayList<>(items);
+                    (ArrayList<ListItem>) items : new ArrayList<>(items);
         }
 
         @Override
@@ -138,15 +145,54 @@ public class FeedFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         }
 
         @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            if (convertView == null) {
-                convertView = new TextView(getContext());
+        public View getView(int position, View v, ViewGroup parent) {
+            if (v == null) {
+                v = layoutInflater.inflate(R.layout.layout_feed_item, parent, false);
+                final Companion companion = new Companion(ButterKnife.<ImageView>findById(v, R.id.imageView),
+                        ButterKnife.<TextView>findById(v, R.id.titleTextView),
+                        ButterKnife.<TextView>findById(v, R.id.descriptionTextView));
+                v.setTag(companion);
             }
 
-            final RSSItem item = (RSSItem) getItem(position);
-            TextView textView = (TextView) convertView;
-            textView.setText(item.getTitle());
-            return textView;
+            final ListItem item = (ListItem) getItem(position);
+            final Companion companion = (Companion) v.getTag();
+            companion.titleTextView.setText(item.getTitle());
+            picasso.load(item.getImgUri()).into(companion.imageView);
+            companion.renderDescription(item.isExpanded() ? item.getDescription() : null);
+
+            v.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    item.setExpanded(!item.isExpanded());
+                    companion.renderDescription(item.isExpanded() ? item.getDescription() : null);
+                    companion.titleTextView.setTypeface(item.isExpanded() ? Typeface.DEFAULT_BOLD : Typeface.DEFAULT);
+                }
+            });
+
+            return v;
+        }
+
+        private class Companion {
+            public final ImageView imageView;
+            public final TextView titleTextView;
+            public final TextView descriptionTextView;
+
+            public Companion(ImageView imageView, TextView titleTextView,
+                             TextView descriptionTextView) {
+                this.imageView = imageView;
+                this.titleTextView = titleTextView;
+                this.descriptionTextView = descriptionTextView;
+            }
+
+            public void renderDescription(String description) {
+                if (description != null && !"".equals(description)) {
+                    descriptionTextView.setText(description);
+                    descriptionTextView.setVisibility(View.VISIBLE);
+                } else {
+                    descriptionTextView.setText(null); // free memory :)
+                    descriptionTextView.setVisibility(View.GONE);
+                }
+            }
         }
     }
 }

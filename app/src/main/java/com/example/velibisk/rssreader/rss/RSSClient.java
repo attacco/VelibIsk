@@ -83,7 +83,7 @@ public class RSSClient {
                     }
                 } else if ("title".equals(p.getName())) {
                     if (item != null) {
-                        item.title = text;
+                        item.title = safeTrim(text);
                     }
                 } else if ("enclosure".equals(p.getName())) {
                     if (item != null) {
@@ -91,7 +91,7 @@ public class RSSClient {
                     }
                 } else if ("description".equals(p.getName())) {
                     if (item != null) {
-                        item.description = text;
+                        item.description = safeTrim(text);
                     }
                 } else if ("pubDate".equals(p.getName())) {
                     if (item != null) {
@@ -102,4 +102,9 @@ public class RSSClient {
             p.next();
         }
     }
+
+    private String safeTrim(String s) {
+        return s == null ? null : s.trim();
+    }
+
 }
