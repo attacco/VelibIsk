@@ -48,7 +48,7 @@ public class FeedLoader extends AsyncTaskLoader<List<ListItem>> {
 
         // left for demonstration of initial progress fragment
         try {
-            Thread.sleep(2000);
+            Thread.sleep(1000);
         } catch (InterruptedException e) {
             throw new OperationCanceledException();
         }
