@@ -1,9 +1,7 @@
 package com.example.velibisk.rssreader.rss;
 
-import android.content.Context;
 import android.util.Xml;
 
-import com.squareup.okhttp.Cache;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
@@ -11,27 +9,21 @@ import com.squareup.okhttp.internal.Util;
 
 import org.xmlpull.v1.XmlPullParser;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Created by attacco on 23.12.2015.
  */
 public class RSSClient {
-    private final static long CACHE_DIR_SIZE = 1024 * 1024;
     private final OkHttpClient http;
 
-    public RSSClient(Context context) {
-        http = new OkHttpClient();
-        http.setCache(new Cache(new File(context.getCacheDir(), "http"), CACHE_DIR_SIZE));
-        http.setConnectTimeout(3, TimeUnit.SECONDS);
-        http.setReadTimeout(3, TimeUnit.SECONDS);
+    public RSSClient(OkHttpClient okHttpClient) {
+        this.http = okHttpClient;
     }
 
     public void read(RSSSource source, RSSItemVisitor visitor) throws Exception {

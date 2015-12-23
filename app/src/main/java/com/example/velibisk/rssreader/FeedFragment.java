@@ -18,6 +18,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import javax.inject.Inject;
+
+import butterknife.Bind;
+import butterknife.ButterKnife;
+
 /**
  * Created by attacco on 23.12.2015.
  */
@@ -25,9 +30,12 @@ public class FeedFragment extends Fragment implements SwipeRefreshLayout.OnRefre
     private final static String ARGUMENTS_ITEMS_KEY = "items";
 
     private final AdapterImpl adapter;
-    private SwipeRefreshLayout swipeRefreshLayout;
+
+    @Bind(R.id.swipeRefreshLayout) SwipeRefreshLayout swipeRefreshLayout;
+    @Bind(R.id.listView) ListView listView;
     private Listener listener;
 
+    @Inject
     public FeedFragment() {
         adapter = new AdapterImpl(Collections.<RSSItem>emptyList());
     }
@@ -56,11 +64,9 @@ public class FeedFragment extends Fragment implements SwipeRefreshLayout.OnRefre
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         final View v = inflater.inflate(R.layout.fragment_feed, container, false);
+        ButterKnife.bind(this, v);
 
-        final ListView listView = (ListView) v.findViewById(R.id.listView);
         listView.setAdapter(adapter);
-
-        swipeRefreshLayout = (SwipeRefreshLayout) v.findViewById(R.id.swipeRefreshLayout);
         swipeRefreshLayout.setOnRefreshListener(this);
 
         return v;
