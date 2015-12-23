@@ -157,9 +157,10 @@ public class FeedFragment extends Fragment implements SwipeRefreshLayout.OnRefre
 
             final ListItem item = (ListItem) getItem(position);
             final Companion companion = (Companion) v.getTag();
+            companion.renderImage(item);
             companion.renderTitle(item);
-            companion.loadImage(item);
             companion.renderDescription(item);
+            companion.renderSource(item);
 
             v.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -176,11 +177,18 @@ public class FeedFragment extends Fragment implements SwipeRefreshLayout.OnRefre
             private final ImageView imageView;
             private final TextView titleTextView;
             private final TextView descriptionTextView;
+            private final TextView sourceTextView;
 
             public Companion(View v) {
                 imageView = ButterKnife.findById(v, R.id.imageView);
                 titleTextView = ButterKnife.findById(v, R.id.titleTextView);
                 descriptionTextView = ButterKnife.findById(v, R.id.descriptionTextView);
+                sourceTextView = ButterKnife.findById(v, R.id.sourceTextView);
+            }
+
+            public void renderSource(ListItem item) {
+                sourceTextView.setText(getString(R.string.list_item_source_text,
+                        item.getSource().getLocalizedName(getActivity())));
             }
 
             public void renderDescription(ListItem item) {
@@ -201,7 +209,7 @@ public class FeedFragment extends Fragment implements SwipeRefreshLayout.OnRefre
                 titleTextView.setText(item.getTitle());
             }
 
-            public void loadImage(ListItem item) {
+            public void renderImage(ListItem item) {
                 picasso.load(item.getImgUri()).into(imageView);
             }
         }

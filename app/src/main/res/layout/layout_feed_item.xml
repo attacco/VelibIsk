@@ -15,11 +15,11 @@
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
         style="@style/Widget.ListItem.TextArea"
         android:paddingLeft="15dp"
         android:paddingRight="15dp"
-        android:id="@+id/textArea">
+        android:id="@+id/textArea"
+        android:layout_above="@+id/sourceTextView">
 
         <TextView
             android:layout_width="match_parent"
@@ -38,4 +38,17 @@
             style="@style/Widget.ListItem.Description"
             android:paddingTop="2dp" />
     </LinearLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="New Text"
+        android:id="@+id/sourceTextView"
+        android:layout_alignParentBottom="true"
+        style="@style/Widget.ListItem.Source"
+        android:paddingLeft="15dp"
+        android:paddingRight="15dp"
+        android:paddingTop="1dp"
+        android:paddingBottom="1dp"
+        android:gravity="right" />
 </RelativeLayout>

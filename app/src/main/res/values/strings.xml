@@ -8,5 +8,6 @@
     <string name="menu_item_about">About</string>
     <string name="dialog_about_text">Developer: Velib. Isk.</string>
     <string name="dialog_positive_button_text">OK</string>
+    <string name="list_item_source_text">Source: %1$s</string>
 
 </resources>
