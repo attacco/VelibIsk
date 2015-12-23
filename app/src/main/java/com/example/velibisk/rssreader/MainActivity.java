@@ -10,6 +10,8 @@ import com.example.velibisk.rssreader.rss.RSSItem;
 
 import java.util.List;
 
+import butterknife.BindColor;
+
 /**
  * Created by attacco on 22.12.2015.
  */

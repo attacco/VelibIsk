@@ -21,6 +21,7 @@ import java.util.List;
 import javax.inject.Inject;
 
 import butterknife.Bind;
+import butterknife.BindColor;
 import butterknife.ButterKnife;
 
 /**
@@ -33,6 +34,8 @@ public class FeedFragment extends Fragment implements SwipeRefreshLayout.OnRefre
 
     @Bind(R.id.swipeRefreshLayout) SwipeRefreshLayout swipeRefreshLayout;
     @Bind(R.id.listView) ListView listView;
+    @BindColor(R.color.colorAccent) int accentColor;
+
     private Listener listener;
 
     @Inject
@@ -68,6 +71,7 @@ public class FeedFragment extends Fragment implements SwipeRefreshLayout.OnRefre
 
         listView.setAdapter(adapter);
         swipeRefreshLayout.setOnRefreshListener(this);
+        swipeRefreshLayout.setColorSchemeColors(accentColor);
 
         return v;
     }
