@@ -12,6 +12,9 @@ public final class Util {
     }
 
     public static <E> ArrayList<E> toArrayList(Collection<E> collection) {
+        if (collection == null) {
+            return null;
+        }
         return collection instanceof ArrayList ? (ArrayList<E>)collection : new ArrayList<>(collection);
     }
 
