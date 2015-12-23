@@ -2,6 +2,7 @@ package com.example.velibisk.rssreader;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
@@ -9,6 +10,7 @@ import android.support.v4.content.Loader;
 import android.support.v4.os.OperationCanceledException;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.example.velibisk.rssreader.rss.RSSClient;
 import com.example.velibisk.rssreader.rss.RSSItem;
@@ -75,10 +77,12 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     private static class LoaderImpl extends AsyncTaskLoader<List<RSSItem>> {
         private final static String LOGGER_TAG = "Loader";
         private final RSSClient client;
+        private final Handler handler;
         private List<RSSItem> data;
 
         public LoaderImpl(Context context) {
             super(context);
+            handler = new Handler();
             // todo use DI instead
             client = new RSSClient(getContext());
         }
@@ -94,23 +98,46 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 }
             };
 
-            // todo remove it
+            // left for demonstration of initial progress fragment
             try {
                 Thread.sleep(2000);
             } catch (InterruptedException e) {
                 throw new OperationCanceledException();
             }
+            if (isLoadInBackgroundCanceled()) {
+                throw new OperationCanceledException();
+            }
 
+            final List<RSSSource> failedSources = new ArrayList<>();
             for (RSSSource source : RSSSource.values()) {
                 try {
                     client.read(source, visitor);
                 } catch (Exception e) {
                     Log.e(LOGGER_TAG, "Failed to complete reading source: " + source.name(), e);
+                    failedSources.add(source);
                 }
                 if (isLoadInBackgroundCanceled()) {
                     throw new OperationCanceledException();
                 }
             }
+
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (isStarted()) {
+                        String toastText = null;
+                        if (failedSources.size() == 1) {
+                            toastText = getContext().getString(R.string.activity_main_failed_read_source_toast,
+                                    failedSources.get(0).getLocalizedName(getContext()));
+                        } else if (failedSources.size() > 1) {
+                            toastText = getContext().getString(R.string.activity_main_failed_read_several_sources_toast);
+                        }
+                        if (toastText != null) {
+                            Toast.makeText(getContext(), toastText, Toast.LENGTH_LONG).show();
+                        }
+                    }
+                }
+            });
 
             Collections.sort(items, new Comparator<RSSItem>() {
                 @Override
