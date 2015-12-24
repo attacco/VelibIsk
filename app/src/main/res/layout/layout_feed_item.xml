@@ -2,7 +2,8 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="@dimen/list_item_default_height"
-    android:id="@+id/rootArea">
+    android:id="@+id/rootArea"
+    android:background="@drawable/drop_shadow">
 
     <ImageView
         android:layout_width="match_parent"
@@ -16,10 +17,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         style="@style/Widget.ListItem.TextArea"
-        android:paddingLeft="15dp"
-        android:paddingRight="15dp"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
         android:id="@+id/textArea"
-        android:layout_above="@+id/sourceTextView">
+        android:layout_above="@+id/infoTextView">
 
         <TextView
             android:layout_width="match_parent"
@@ -42,12 +43,12 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="New Text"
-        android:id="@+id/sourceTextView"
+        android:text="Source: Lenta.ru / 2015-01-01 12:44"
+        android:id="@+id/infoTextView"
         android:layout_alignParentBottom="true"
-        style="@style/Widget.ListItem.Source"
-        android:paddingLeft="15dp"
-        android:paddingRight="15dp"
+        style="@style/Widget.ListItem.Info"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
         android:paddingTop="1dp"
         android:paddingBottom="1dp"
         android:gravity="right" />

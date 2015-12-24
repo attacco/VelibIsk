@@ -19,6 +19,7 @@ import com.example.velibisk.rssreader.R;
 import com.example.velibisk.rssreader.Util;
 import com.squareup.picasso.Picasso;
 
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -34,6 +35,7 @@ import butterknife.ButterKnife;
  */
 public class FeedFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
     private final static String ARGUMENTS_ITEMS_KEY = "items";
+    private final static String PICASSO_REQUEST_TAG = FeedFragment.class.getName();
 
     @Bind(R.id.swipeRefreshLayout)
     SwipeRefreshLayout swipeRefreshLayout;
@@ -75,6 +77,7 @@ public class FeedFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         super.onDetach();
         listener = null;
         adapter = null;
+        picasso.cancelTag(PICASSO_REQUEST_TAG);
     }
 
     @Nullable
@@ -109,6 +112,18 @@ public class FeedFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         }
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        picasso.pauseTag(PICASSO_REQUEST_TAG);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        picasso.resumeTag(PICASSO_REQUEST_TAG);
+    }
+
     public void update(List<ListItem> items) {
         swipeRefreshLayout.setRefreshing(false);
         adapter.setData(Util.toArrayList(items));
@@ -121,6 +136,8 @@ public class FeedFragment extends Fragment implements SwipeRefreshLayout.OnRefre
 
     private class AdapterImpl extends BaseAdapter {
         private final LayoutInflater layoutInflater = getActivity().getLayoutInflater();
+        private final DateFormat dtf = DateFormat.getDateTimeInstance(DateFormat.LONG,
+                DateFormat.SHORT, getActivity().getResources().getConfiguration().locale);
         private ArrayList<ListItem> items;
 
         public AdapterImpl() {
@@ -160,7 +177,7 @@ public class FeedFragment extends Fragment implements SwipeRefreshLayout.OnRefre
             companion.renderImage(item);
             companion.renderTitle(item);
             companion.renderDescription(item);
-            companion.renderSource(item);
+            companion.renderInfo(item);
 
             v.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -177,18 +194,18 @@ public class FeedFragment extends Fragment implements SwipeRefreshLayout.OnRefre
             private final ImageView imageView;
             private final TextView titleTextView;
             private final TextView descriptionTextView;
-            private final TextView sourceTextView;
+            private final TextView infoTextView;
 
             public Companion(View v) {
                 imageView = ButterKnife.findById(v, R.id.imageView);
                 titleTextView = ButterKnife.findById(v, R.id.titleTextView);
                 descriptionTextView = ButterKnife.findById(v, R.id.descriptionTextView);
-                sourceTextView = ButterKnife.findById(v, R.id.sourceTextView);
+                infoTextView = ButterKnife.findById(v, R.id.infoTextView);
             }
 
-            public void renderSource(ListItem item) {
-                sourceTextView.setText(getString(R.string.list_item_source_text,
-                        item.getSource().getLocalizedName(getActivity())));
+            public void renderInfo(ListItem item) {
+                infoTextView.setText(getString(R.string.list_item_source_text,
+                        item.getSource().getLocalizedName(getActivity()), dtf.format(item.getDate())));
             }
 
             public void renderDescription(ListItem item) {
@@ -210,7 +227,7 @@ public class FeedFragment extends Fragment implements SwipeRefreshLayout.OnRefre
             }
 
             public void renderImage(ListItem item) {
-                picasso.load(item.getImgUri()).into(imageView);
+                picasso.load(item.getImgUri()).tag(PICASSO_REQUEST_TAG).into(imageView);
             }
         }
     }

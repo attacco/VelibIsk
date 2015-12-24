@@ -92,7 +92,8 @@ public class FeedLoader extends AsyncTaskLoader<List<ListItem>> {
             public int compare(ListItem lhs, ListItem rhs) {
                 final long ldate = lhs.getDate().getTime();
                 final long rdate = rhs.getDate().getTime();
-                return ldate < rdate ? -1 : ldate == rdate ? 0 : 1;
+                // sort in descending order
+                return ldate < rdate ? 1 : ldate == rdate ? 0 : -1;
             }
         });
 
