@@ -209,14 +209,14 @@ public class FeedFragment extends Fragment implements SwipeRefreshLayout.OnRefre
             }
 
             public void renderDescription(ListItem item) {
-                final String description = item.isExpanded() ? item.getDescription() : null;
                 final boolean expanded;
-                if (description != null && !"".equals(description)) {
-                    expanded = true;
-                    descriptionTextView.setText(description);
-                } else {
+                final String description = item.isExpanded() ? item.getDescription() : null;
+                if (Util.isEmpty(description)) {
                     expanded = false;
                     descriptionTextView.setText(null); // free memory :)
+                } else {
+                    expanded = true;
+                    descriptionTextView.setText(description);
                 }
                 descriptionTextView.setVisibility(expanded ? View.VISIBLE : View.GONE);
             }
@@ -227,6 +227,9 @@ public class FeedFragment extends Fragment implements SwipeRefreshLayout.OnRefre
             }
 
             public void renderImage(ListItem item) {
+                if (Util.isEmpty(item.getImgUri())) {
+                    return;
+                }
                 picasso.load(item.getImgUri()).tag(PICASSO_REQUEST_TAG).into(imageView);
             }
         }

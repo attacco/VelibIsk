@@ -18,4 +18,11 @@ public final class Util {
         return collection instanceof ArrayList ? (ArrayList<E>)collection : new ArrayList<>(collection);
     }
 
+    public static String safeTrim(String s) {
+        return s == null ? null : s.trim();
+    }
+
+    public static boolean isEmpty(String s) {
+        return s == null || "".equals(s);
+    }
 }

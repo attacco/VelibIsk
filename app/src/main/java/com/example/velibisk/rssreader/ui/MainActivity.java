@@ -28,7 +28,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         setContentView(R.layout.activity_main);
 
         getSupportFragmentManager().beginTransaction()
-                .add(R.id.fragmentContainer, new ProgressFragment(), PROGRESS_FRAGMENT_TAG)
+                .replace(R.id.fragmentContainer, new ProgressFragment(), PROGRESS_FRAGMENT_TAG)
                 .commit();
 
         getSupportLoaderManager().initLoader(0, null, this);

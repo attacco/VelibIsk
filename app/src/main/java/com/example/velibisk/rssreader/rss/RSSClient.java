@@ -19,6 +19,8 @@ import java.util.Locale;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import static com.example.velibisk.rssreader.Util.safeTrim;
+
 /**
  * Created by attacco on 23.12.2015.
  */
@@ -101,10 +103,6 @@ public class RSSClient {
             }
             p.next();
         }
-    }
-
-    private String safeTrim(String s) {
-        return s == null ? null : s.trim();
     }
 
 }
