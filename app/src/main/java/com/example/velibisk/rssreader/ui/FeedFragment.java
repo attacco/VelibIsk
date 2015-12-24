@@ -227,9 +227,6 @@ public class FeedFragment extends Fragment implements SwipeRefreshLayout.OnRefre
             }
 
             public void renderImage(ListItem item) {
-                if (Util.isEmpty(item.getImgUri())) {
-                    return;
-                }
                 picasso.load(item.getImgUri()).tag(PICASSO_REQUEST_TAG).into(imageView);
             }
         }
