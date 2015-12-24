@@ -36,6 +36,8 @@ import butterknife.ButterKnife;
 public class FeedFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
     private final static String ARGUMENTS_ITEMS_KEY = "items";
     private final static String PICASSO_REQUEST_TAG = FeedFragment.class.getName();
+    private final static int TYPE_VIEW_WITH_IMAGE = 0;
+    private final static int TYPE_VIEW_NO_IMAGE = 1;
 
     @Bind(R.id.swipeRefreshLayout)
     SwipeRefreshLayout swipeRefreshLayout;
@@ -166,10 +168,26 @@ public class FeedFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         }
 
         @Override
+        public int getViewTypeCount() {
+            return 2;
+        }
+
+        @Override
+        public int getItemViewType(int position) {
+            final ListItem item = (ListItem) getItem(position);
+            final boolean withImage = !Util.isEmpty(item.getImgUri());
+            return withImage ? TYPE_VIEW_WITH_IMAGE : TYPE_VIEW_NO_IMAGE;
+        }
+
+        @Override
         public View getView(int position, View v, ViewGroup parent) {
             if (v == null) {
-                v = layoutInflater.inflate(R.layout.layout_feed_item, parent, false);
-                v.setTag(new Companion(v));
+                final int viewType = getItemViewType(position);
+                final boolean withImage = viewType == TYPE_VIEW_WITH_IMAGE;
+                final int viewResId = withImage ? R.layout.layout_feed_item_with_image
+                        : R.layout.layout_feed_item_no_image;
+                v = layoutInflater.inflate(viewResId, parent, false);
+                v.setTag(new Companion(v, withImage));
             }
 
             final ListItem item = (ListItem) getItem(position);
@@ -191,13 +209,13 @@ public class FeedFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         }
 
         private class Companion {
-            private final ImageView imageView;
             private final TextView titleTextView;
             private final TextView descriptionTextView;
             private final TextView infoTextView;
+            private final ImageView imageView;
 
-            public Companion(View v) {
-                imageView = ButterKnife.findById(v, R.id.imageView);
+            public Companion(View v, boolean withImage) {
+                imageView = withImage ? ButterKnife.<ImageView>findById(v, R.id.imageView) : null;
                 titleTextView = ButterKnife.findById(v, R.id.titleTextView);
                 descriptionTextView = ButterKnife.findById(v, R.id.descriptionTextView);
                 infoTextView = ButterKnife.findById(v, R.id.infoTextView);
@@ -227,7 +245,9 @@ public class FeedFragment extends Fragment implements SwipeRefreshLayout.OnRefre
             }
 
             public void renderImage(ListItem item) {
-                picasso.load(item.getImgUri()).tag(PICASSO_REQUEST_TAG).into(imageView);
+                if (imageView != null) {
+                    picasso.load(item.getImgUri()).tag(PICASSO_REQUEST_TAG).into(imageView);
+                }
             }
         }
     }
